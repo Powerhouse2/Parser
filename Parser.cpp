@@ -4,26 +4,9 @@
 #include <mcp_can.h>
 #include "Parser.h"
 #include <SPI.h>
-#include <Wire.h>
-#include <LCD.h>
-#include <LiquidCrystal_I2C.h>
 
 // Instantiate CAN Connection
 MCP_CAN _CAN(_CAN_PIN);
-
-#define BACKLIGHT_PIN 3
-#define I2C_ADDR 0x27
-#define En_pin 2
-#define Rw_pin 1
-#define Rs_pin 0
-#define D4_pin 4
-#define D5_pin 5
-#define D6_pin 6
-#define D7_pin 7
-
-// Instantiate LCD connection
-LiquidCrystal_I2C lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
-
 
 /**
  * --------------------
@@ -64,7 +47,6 @@ void Parser::init()
 
     // Run Setup
     Parser::_configureCAN();
-    Parser::_configureLCD();
 }
 
 
@@ -75,35 +57,22 @@ void Parser::init()
 */
 void Parser::_configureCAN()
 {
-    // Initialize MCP2515 running at 16MHz with a baudrate of 10kb/s.
+    // Initialize MCP2515 running at 16MHz with a baudrate of 500kb/s.
     if(_CAN.begin(MCP_ANY, CAN_500KBPS, MCP_16MHZ) == CAN_OK)
     {
-        Serial.println("MCP2515 Initialized Successfully!");}
-        else{
-            Serial.println("Error Initializing MCP2515...");
-        }
+    Serial.println("MCP2515 Initialized Successfully!");}
+    else{
+        Serial.println("Error Initializing MCP2515...");
+    }
 
     // Change to normal mode to allow messages to be transmitted
     // Default is Loopback mode (debugging mode)
-        _CAN.setMode(MCP_NORMAL);
+    _CAN.setMode(MCP_NORMAL);
 
     // Configure the an Input for receiving
-        pinMode(_CAN_RECEIVE, INPUT);
-    }
-
-    void Parser::_configureLCD()
-    {
-        lcd.begin (16, 2);
-
-    // Switch on the backlight
-        lcd.setBacklightPin(BACKLIGHT_PIN,POSITIVE);
-        lcd.setBacklight(HIGH);
-    lcd.home (); // go home
-
-    lcd.print("Spoiler");
-    lcd.setCursor(0,1);
-    lcd.print("Controller");
+    pinMode(_CAN_RECEIVE, INPUT);
 }
+
 
 /**
  * --------------------
@@ -142,23 +111,16 @@ void Parser::listen()
 /**
  * --------------------
  * Parse the current request frame
+ * and update public values
  * --------------------
  */
 void Parser::_parse()
 {
     if(_rxId == 12){
         // RPM
-        rpm =((_rxBuf[0] * 256) + _rxBuf[1])/4;
-
-        lcd.setCursor(0,0);
-        lcd.print("RPM: ");
-        lcd.print(rpm);
+        rpm = ((_rxBuf[0] * 256) + _rxBuf[1])/4;
     } else if(_rxId == 13){
         // Speed
-        speed =_rxBuf[0];
-
-        lcd.setCursor(0,1);
-        lcd.print("Speed: ");
-        lcd.print(speed);
+        speed = _rxBuf[0];
     }
 }

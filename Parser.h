@@ -12,16 +12,11 @@
   #include "WConstants.h"
 #endif
 
-#include <Wire.h>
-#include <LCD.h>
-#include <LiquidCrystal_I2C.h>
-
 
 class Parser{
   public:
     int rpm;
     int speed;
-    int throttle;
 
     Parser(); // Constructor
     void init();
@@ -40,7 +35,6 @@ class Parser{
     #define _CAN_PIN 10
 
     void _configureCAN();
-    void _configureLCD();
     void _parse();
 };
 
